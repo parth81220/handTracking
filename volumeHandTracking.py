@@ -67,11 +67,18 @@ while True:
             length = math.hypot(x2 - x1, y2 - y1)
             print(length)
 
-            new_vol = np.interp(length, [35, 200], [minVol, maxVol])
+            # new_vol = np.interp(length, [35, 200], [minVol, maxVol])
+            normalized_length = (length - 35) / (300 - 40)
+            normalized_length = max(0, min(normalized_length, 1))
+            scaled_length = 1 / (1 + np.exp(-6 * (normalized_length - 0.4))) 
+            new_vol = minVol + (maxVol - minVol) * scaled_length
             if smoothed_vol is None:
                 smoothed_vol = new_vol  # Initialize on first frame
             else:
                 smoothed_vol = alpha * new_vol + (1 - alpha) * smoothed_vol
+            
+            # Ensure smoothed_vol remains a float
+            smoothed_vol = float(max(minVol, min(smoothed_vol.real, maxVol)))
 
             volume.SetMasterVolumeLevel(smoothed_vol, None)
 
@@ -92,5 +99,5 @@ while True:
     cv2.putText(img, str(int(fps)), (10,70), cv2.FONT_HERSHEY_PLAIN, 3,
                 (255,0,255),3)
 
-    cv2.imshow("Image", img)
+    # cv2.imshow("Image", img)
     cv2.waitKey(1)
